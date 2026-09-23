@@ -1,7 +1,7 @@
 {
   "name": "pi-gearshift",
   "version": "0.1.0",
-  "description": "Let Jev decide which model to use",
+  "description": "Automatic per-turn model and thinking-level routing for Pi, powered by Jev",
   "keywords": [
     "pi-package",
     "pi-extension",
@@ -28,7 +28,8 @@
   "pi": {
     "extensions": [
       "./src/index.ts"
-    ]
+    ],
+    "image": "https://raw.githubusercontent.com/iharuya/pi-gearshift/main/assets/what-is-this.png"
   },
   "publishConfig": {
     "access": "public"

@@ -24,26 +24,26 @@ Set `TYPESAFE_API_KEY`, or start Pi and run:
 
 ## Configure
 
-Create `~/.pi/agent/pi-gearshift/settings.json`:
+Create `~/.pi/agent/pi-gearshift/settings.json`. Example:
 
 ```json
 {
-  "enabled": false,
+  "enabled": true,
   "gearBias": 0,
   "gears": {
     "light": {
-      "provider": "your-provider",
-      "model": "your-light-model",
+      "provider": "openai-codex",
+      "model": "gpt-5.6-luna",
       "thinkingLevel": "low"
     },
     "standard": {
-      "provider": "your-provider",
-      "model": "your-standard-model",
+      "provider": "openai-codex",
+      "model": "gpt-5.6-terra",
       "thinkingLevel": "medium"
     },
     "heavy": {
-      "provider": "your-provider",
-      "model": "your-heavy-model",
+      "provider": "openai-codex",
+      "model": "gpt-5.6-sol",
       "thinkingLevel": "high"
     }
   }
@@ -80,10 +80,6 @@ For each request, Jev scores the capability needed for the next coding-agent tur
 The routing state contains the complete current request and up to 10 recent user or assistant messages. Recent messages are middle-truncated to 256 characters each; thinking blocks, tool calls, and tool results are excluded.
 
 Routing failures are not retried. Pi keeps the current model whenever routing or model application fails.
-
-## Privacy
-
-The current request and bounded recent conversation are sent to TypeSafe for routing. They are not persisted in pi-gearshift's settings or logs.
 
 ## License
 
