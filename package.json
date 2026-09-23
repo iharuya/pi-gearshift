@@ -20,6 +20,7 @@
     "url": "https://github.com/iharuya/pi-gearshift/issues"
   },
   "files": [
+    "extensions",
     "src",
     "assets/what-is-this.png",
     "README.md",
@@ -27,7 +28,7 @@
   ],
   "pi": {
     "extensions": [
-      "./src/index.ts"
+      "./extensions/index.ts"
     ],
     "image": "https://raw.githubusercontent.com/iharuya/pi-gearshift/main/assets/what-is-this.png"
   },
