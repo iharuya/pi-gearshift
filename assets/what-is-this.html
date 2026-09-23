@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>What is pi-gearshift?</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080b10;
+        --panel: #111720;
+        --panel-strong: #161e29;
+        --line: #2b3544;
+        --muted: #8490a1;
+        --text: #f6f8fb;
+        --light: #6ce5b1;
+        --standard: #72a7ff;
+        --heavy: #c795ff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        overflow-x: hidden;
+        background: #ffffff;
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      .canvas {
+        position: relative;
+        isolation: isolate;
+        width: 1280px;
+        height: 720px;
+        overflow: hidden;
+        padding: 30px 40px 22px;
+        background:
+          radial-gradient(circle at 78% 4%, rgba(114, 167, 255, 0.13), transparent 29%),
+          radial-gradient(circle at 18% 98%, rgba(108, 229, 177, 0.08), transparent 30%),
+          linear-gradient(145deg, #0c1118 0%, #080b10 60%, #0b0d14 100%);
+      }
+
+      .canvas::before {
+        position: absolute;
+        z-index: -1;
+        inset: 0;
+        content: "";
+        opacity: 0.18;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+        background-size: 36px 36px;
+        mask-image: linear-gradient(to bottom, black, transparent 78%);
+      }
+
+      header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 48px;
+        margin-bottom: 24px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 12px;
+        color: #c8d1de;
+        font-size: 15px;
+        font-weight: 750;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 35px;
+        height: 35px;
+        place-items: center;
+        border: 1px solid #3d4a5d;
+        border-radius: 10px;
+        background: #151d28;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+      }
+
+      .brand-mark svg {
+        width: 21px;
+        height: 21px;
+      }
+
+      h1 {
+        max-width: 800px;
+        margin: 0;
+        font-size: 52px;
+        font-weight: 760;
+        letter-spacing: -0.052em;
+        line-height: 0.98;
+      }
+
+      h1 span {
+        color: #9dbfff;
+      }
+
+      .summary {
+        width: 315px;
+        margin: 24px 0 0;
+        color: #aab4c2;
+        font-size: 18px;
+        line-height: 1.55;
+      }
+
+      .stage-labels,
+      .route {
+        display: grid;
+        grid-template-columns: minmax(300px, 1.25fr) 70px 90px 70px 180px 70px minmax(250px, 1fr);
+        align-items: center;
+      }
+
+      .stage-labels {
+        margin-bottom: 10px;
+        color: #687588;
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: 0.17em;
+        text-transform: uppercase;
+      }
+
+      .stage-labels .request-label {
+        grid-column: 1;
+      }
+
+      .stage-labels .judgment-label {
+        grid-column: 3;
+        text-align: center;
+      }
+
+      .stage-labels .gear-label {
+        grid-column: 5;
+        text-align: center;
+      }
+
+      .stage-labels .response-label {
+        grid-column: 7;
+      }
+
+      .routes {
+        position: relative;
+        display: grid;
+        gap: 12px;
+      }
+
+      .routes::before {
+        position: absolute;
+        top: 70px;
+        bottom: 70px;
+        left: 508px;
+        width: 1px;
+        content: "";
+        background: linear-gradient(transparent, #334055 15%, #334055 85%, transparent);
+      }
+
+      .route {
+        position: relative;
+        min-height: 128px;
+        padding: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.075);
+        border-radius: 22px;
+        background: rgba(13, 18, 26, 0.8);
+        box-shadow: 0 16px 45px rgba(0, 0, 0, 0.18);
+      }
+
+      .route.standard {
+        --accent: var(--standard);
+        --accent-rgb: 114, 167, 255;
+      }
+
+      .route.light {
+        --accent: var(--light);
+        --accent-rgb: 108, 229, 177;
+      }
+
+      .route.heavy {
+        --accent: var(--heavy);
+        --accent-rgb: 199, 149, 255;
+      }
+
+      .message {
+        height: 100%;
+        min-height: 98px;
+        padding: 14px 16px;
+        border: 1px solid #273241;
+        border-radius: 15px;
+        background: linear-gradient(155deg, var(--panel-strong), var(--panel));
+      }
+
+      .message .meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
+
+      .avatar {
+        display: inline-grid;
+        width: 20px;
+        height: 20px;
+        place-items: center;
+        border-radius: 6px;
+        background: #263142;
+        color: #c9d2df;
+        font-size: 10px;
+        letter-spacing: 0;
+      }
+
+      .message p {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 560;
+        letter-spacing: -0.012em;
+        line-height: 1.38;
+      }
+
+      .message.output {
+        border-color: rgba(var(--accent-rgb), 0.28);
+        background: linear-gradient(155deg, rgba(var(--accent-rgb), 0.09), #111720 62%);
+      }
+
+      .message.output .meta {
+        color: var(--accent);
+      }
+
+      .connector {
+        position: relative;
+        height: 2px;
+        background: linear-gradient(90deg, #303b4b, var(--accent));
+      }
+
+      .connector::after {
+        position: absolute;
+        top: 50%;
+        right: -1px;
+        width: 9px;
+        height: 9px;
+        content: "";
+        transform: translateY(-50%) rotate(45deg);
+        border-top: 2px solid var(--accent);
+        border-right: 2px solid var(--accent);
+      }
+
+      .jev {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        width: 68px;
+        height: 68px;
+        place-items: center;
+        justify-self: center;
+        border: 1px solid rgba(var(--accent-rgb), 0.55);
+        border-radius: 50%;
+        background: #101721;
+        box-shadow:
+          0 0 0 8px rgba(8, 11, 16, 0.82),
+          0 0 28px rgba(var(--accent-rgb), 0.16);
+      }
+
+      .jev::before {
+        position: absolute;
+        inset: 7px;
+        content: "";
+        border: 1px dashed rgba(var(--accent-rgb), 0.35);
+        border-radius: inherit;
+      }
+
+      .jev span {
+        color: var(--accent);
+        font-size: 22px;
+        font-weight: 850;
+        letter-spacing: -0.06em;
+      }
+
+      .jev small {
+        position: absolute;
+        right: 0;
+        bottom: -19px;
+        left: 0;
+        color: #697789;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      .gear {
+        position: relative;
+        overflow: hidden;
+        min-height: 76px;
+        padding: 14px 16px;
+        border: 1px solid rgba(var(--accent-rgb), 0.55);
+        border-radius: 17px;
+        background: linear-gradient(140deg, rgba(var(--accent-rgb), 0.2), rgba(var(--accent-rgb), 0.055));
+        box-shadow: inset 0 1px rgba(255, 255, 255, 0.05);
+      }
+
+      .gear::after {
+        position: absolute;
+        top: -36px;
+        right: -20px;
+        width: 100px;
+        height: 100px;
+        content: "";
+        border: 18px solid rgba(var(--accent-rgb), 0.09);
+        border-radius: 50%;
+      }
+
+      .gear .number {
+        display: block;
+        margin-bottom: 5px;
+        color: rgba(var(--accent-rgb), 0.72);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+      }
+
+      .gear strong {
+        position: relative;
+        z-index: 1;
+        display: block;
+        color: var(--accent);
+        font-size: 21px;
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+      }
+
+      .gear em {
+        position: relative;
+        z-index: 1;
+        display: block;
+        margin-top: 3px;
+        color: #aab5c4;
+        font-size: 12px;
+        font-style: normal;
+      }
+
+      .message.output strong {
+        color: var(--accent);
+      }
+
+      footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 18px;
+        padding: 0 4px;
+      }
+
+      .principle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #8793a4;
+        font-size: 13px;
+      }
+
+      .pulse {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #7aaeff;
+        box-shadow: 0 0 14px #7aaeff;
+      }
+
+      .spectrum {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #778397;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .spectrum-line {
+        width: 180px;
+        height: 3px;
+        border-radius: 99px;
+        background: linear-gradient(90deg, var(--light), var(--standard), var(--heavy));
+      }
+
+    </style>
+  </head>
+  <body>
+    <main class="canvas" aria-label="pi-gearshift concept diagram">
+      <header>
+        <div>
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <title>pi-gearshift logo</title>
+                <path d="M6 5v14M18 5v14M6 9h6a3 3 0 0 0 3-3V5M18 15h-6a3 3 0 0 0-3 3v1" stroke="#9dbfff" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </span>
+            pi-gearshift
+          </div>
+          <h1>The right gear for<br /><span>every turn.</span></h1>
+        </div>
+        <p class="summary">
+          Jev reads the request, then Pi shifts to the model and thinking level
+          the next turn actually needs.
+        </p>
+      </header>
+
+      <div class="stage-labels" aria-hidden="true">
+        <span class="request-label">Request</span>
+        <span class="judgment-label">Judgment</span>
+        <span class="gear-label">Selected gear</span>
+        <span class="response-label">Pi gets to work</span>
+      </div>
+
+      <section class="routes">
+        <article class="route standard">
+          <div class="message">
+            <div class="meta"><span class="avatar">U</span> User</div>
+            <p>“Investigate the race condition in auth.”</p>
+          </div>
+          <div class="connector"></div>
+          <div class="jev"><span>Jev</span><small>scores</small></div>
+          <div class="connector"></div>
+          <div class="gear">
+            <span class="number">GEAR 02</span>
+            <strong>Standard</strong>
+            <em>balanced capability</em>
+          </div>
+          <div class="connector"></div>
+          <div class="message output">
+            <div class="meta"><span class="avatar">A</span> Assistant</div>
+            <p>“The root cause is <strong>shared mutable state</strong>…”</p>
+          </div>
+        </article>
+
+        <article class="route light">
+          <div class="message">
+            <div class="meta"><span class="avatar">U</span> User</div>
+            <p>“Now just fix the comments.”</p>
+          </div>
+          <div class="connector"></div>
+          <div class="jev"><span>Jev</span><small>scores</small></div>
+          <div class="connector"></div>
+          <div class="gear">
+            <span class="number">GEAR 01</span>
+            <strong>Light</strong>
+            <em>fast &amp; efficient</em>
+          </div>
+          <div class="connector"></div>
+          <div class="message output">
+            <div class="meta"><span class="avatar">✓</span> Completed</div>
+            <p><strong>edit</strong> → done</p>
+          </div>
+        </article>
+
+        <article class="route heavy">
+          <div class="message">
+            <div class="meta"><span class="avatar">U</span> User</div>
+            <p>“Is this architecture actually sound?”</p>
+          </div>
+          <div class="connector"></div>
+          <div class="jev"><span>Jev</span><small>scores</small></div>
+          <div class="connector"></div>
+          <div class="gear">
+            <span class="number">GEAR 03</span>
+            <strong>Heavy</strong>
+            <em>deep reasoning</em>
+          </div>
+          <div class="connector"></div>
+          <div class="message output">
+            <div class="meta"><span class="avatar">A</span> Assistant</div>
+            <p>“Analyzing the <strong>trade-offs</strong>…”</p>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        <div class="principle"><span class="pulse"></span> Routed independently on every user turn</div>
+        <div class="spectrum"><span>Fast</span><span class="spectrum-line"></span><span>Deep</span></div>
+      </footer>
+    </main>
+  </body>
+</html>

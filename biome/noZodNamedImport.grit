@@ -1,0 +1,4 @@
+`import { $imports } from "zod"` as $stmt where {
+  register_diagnostic(span=$stmt, message="Use namespace import: import * as z from 'zod'", severity="error", fix_kind="safe"),
+  $stmt => `import * as z from "zod"`
+}

@@ -1,0 +1,77 @@
+{
+  "name": "pi-gearshift",
+  "version": "0.1.0",
+  "description": "Let Jev decide which model to use",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "jev",
+    "typesafe",
+    "model-routing"
+  ],
+  "author": "iharuya",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iharuya/pi-gearshift.git"
+  },
+  "homepage": "https://github.com/iharuya/pi-gearshift#readme",
+  "bugs": {
+    "url": "https://github.com/iharuya/pi-gearshift/issues"
+  },
+  "files": [
+    "src",
+    "assets/what-is-this.png",
+    "README.md",
+    "LICENSE"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest run --dir tests",
+    "typecheck": "tsc --noEmit",
+    "fix": "biome check --write --diagnostic-level=info --error-on-warnings",
+    "fix:unsafe": "biome check --write --unsafe --verbose --error-on-warnings"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.5.1",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.5.1",
+  "type": "module",
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    },
+    "@earendil-works/pi-tui": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.14",
+    "@earendil-works/pi-agent-core": "^0.87.0",
+    "@earendil-works/pi-ai": "^0.87.0",
+    "@earendil-works/pi-coding-agent": "^0.87.0",
+    "@earendil-works/pi-tui": "^0.87.0",
+    "@types/node": "^26.6.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  },
+  "dependencies": {
+    "@typesafe-ai/sdk": "^0.6.0",
+    "zod": "^4.6.5"
+  }
+}

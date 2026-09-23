@@ -1,0 +1,2 @@
+# export TYPESAFE_API_KEY="your_api_key_here"
+export PI_GEARSHIFT_DATA_DIR="$PWD/.pi-gearshift-dev"
