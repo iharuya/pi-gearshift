@@ -1,6 +1,6 @@
 {
   "name": "pi-gearshift",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Automatic per-turn model and thinking-level routing for Pi, powered by Jev",
   "keywords": [
     "pi-package",
@@ -20,6 +20,7 @@
     "url": "https://github.com/iharuya/pi-gearshift/issues"
   },
   "files": [
+    "extensions",
     "src",
     "assets/what-is-this.png",
     "README.md",
@@ -27,7 +28,7 @@
   ],
   "pi": {
     "extensions": [
-      "./src/index.ts"
+      "./extensions/index.ts"
     ],
     "image": "https://raw.githubusercontent.com/iharuya/pi-gearshift/main/assets/what-is-this.png"
   },
@@ -50,10 +51,14 @@
   "packageManager": "pnpm@12.5.1",
   "type": "module",
   "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
     "@earendil-works/pi-coding-agent": "*",
     "@earendil-works/pi-tui": "*"
   },
   "peerDependenciesMeta": {
+    "@earendil-works/pi-ai": {
+      "optional": true
+    },
     "@earendil-works/pi-coding-agent": {
       "optional": true
     },

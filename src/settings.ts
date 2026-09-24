@@ -4,6 +4,11 @@ import * as z from "zod";
 import { dataDirectory, readJson, writePrivateJson } from "./storage.js";
 
 export const GEARS = ["light", "standard", "heavy"] as const;
+export const GEAR_BIAS_MIN = -1;
+export const GEAR_BIAS_MAX = 1;
+
+export const formatGearBias = (value: number): string =>
+  value > 0 ? `+${value.toFixed(2)}` : value.toFixed(2);
 
 export type ThinkingLevel = Parameters<ExtensionAPI["setThinkingLevel"]>[0];
 const defineThinkingLevels = <const Levels extends readonly ThinkingLevel[]>(
@@ -37,16 +42,22 @@ const fullGearsSchema = z.strictObject({
   heavy: gearConfigSchema,
 });
 
-const gearBiasSchema = z.number().min(-1).max(1).default(0);
+const gearBiasSchema = z
+  .number()
+  .min(GEAR_BIAS_MIN)
+  .max(GEAR_BIAS_MAX)
+  .default(0);
 
 const settingsSchema = z.discriminatedUnion("enabled", [
   z.strictObject({
     enabled: z.literal(false),
+    onboardingDone: z.boolean(),
     gearBias: gearBiasSchema,
     gears: partialGearsSchema.optional(),
   }),
   z.strictObject({
     enabled: z.literal(true),
+    onboardingDone: z.boolean(),
     gearBias: gearBiasSchema,
     gears: fullGearsSchema,
   }),
@@ -66,6 +77,7 @@ export const hasAllGears = (
 
 export const defaultSettings = (): Settings => ({
   enabled: false,
+  onboardingDone: false,
   gearBias: 0,
 });
 
@@ -75,7 +87,10 @@ export const settingsPath = (): string =>
 const parseSettings = (value: unknown, path: string): Settings => {
   const result = settingsSchema.safeParse(value);
   if (!result.success) {
-    throw new Error(`Invalid settings file at ${path}.`);
+    const issues = result.error.issues.map(
+      (issue) => `${issue.path.join(".") || "settings"}: ${issue.message}`,
+    );
+    throw new Error(`Invalid settings file at ${path}:\n${issues.join("\n")}`);
   }
 
   return result.data;
@@ -101,6 +116,11 @@ export const settingsState = (): SettingsState => {
     };
   }
 };
+
+export const describeSettingsError = (
+  state: Extract<SettingsState, { kind: "unusable" }>,
+): string =>
+  `${state.reason}\nEdit this file to fix the issue, or remove it to start setup again.`;
 
 export const writeSettings = (settings: Settings): string => {
   const path = settingsPath();

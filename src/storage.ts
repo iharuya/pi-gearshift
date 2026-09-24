@@ -11,6 +11,7 @@ import {
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { getAgentDir } from "@earendil-works/pi-coding-agent";
+import { UserFacingError } from "./errors.js";
 
 const expandHome = (path: string): string => {
   if (path === "~") return homedir();
@@ -32,14 +33,16 @@ const isMissing = (error: unknown): boolean =>
 const assertRegularFile = (path: string): void => {
   const stats = lstatSync(path);
   if (!stats.isFile() || stats.isSymbolicLink()) {
-    throw new Error(`Refusing to read ${path}: it is not a regular file.`);
+    throw new UserFacingError(
+      `Refusing to read ${path}: it is not a regular file.`,
+    );
   }
 };
 
 const assertPrivateFile = (path: string): void => {
   if (process.platform === "win32") return;
   if ((lstatSync(path).mode & 0o077) !== 0) {
-    throw new Error(
+    throw new UserFacingError(
       `Refusing to read ${path}: it is accessible by other users. Run chmod 600 on it or log in again.`,
     );
   }
@@ -55,13 +58,8 @@ export const readJson = (
     return JSON.parse(readFileSync(path, "utf8")) as unknown;
   } catch (error) {
     if (isMissing(error)) return undefined;
-    if (
-      error instanceof Error &&
-      error.message.startsWith("Refusing to read")
-    ) {
-      throw error;
-    }
-    throw new Error(`Could not read ${path}.`);
+    if (error instanceof UserFacingError) throw error;
+    throw new UserFacingError(`Could not read ${path}.`);
   }
 };
 
@@ -87,7 +85,9 @@ export const writePrivateJson = (path: string, value: unknown): void => {
     try {
       rmSync(temporary, { force: true });
     } catch {}
-    throw new Error(`Could not write ${path}.`);
+    throw new UserFacingError(
+      `Could not write ${path}. Check directory permissions and free disk space.`,
+    );
   }
 };
 
@@ -98,12 +98,7 @@ export const removeFile = (path: string): boolean => {
     return true;
   } catch (error) {
     if (isMissing(error)) return false;
-    if (
-      error instanceof Error &&
-      error.message.startsWith("Refusing to read")
-    ) {
-      throw error;
-    }
-    throw new Error(`Could not remove ${path}.`);
+    if (error instanceof UserFacingError) throw error;
+    throw new UserFacingError(`Could not remove ${path}.`);
   }
 };

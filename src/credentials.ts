@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import * as z from "zod";
+import { UserFacingError } from "./errors.js";
 import {
   dataDirectory,
   readJson,
@@ -29,7 +30,7 @@ export const credentialsPath = (): string => join(dataDirectory(), "auth.json");
 export const normalizeApiKey = (value: unknown): string => {
   const result = apiKeySchema.safeParse(value);
   if (!result.success) {
-    throw new Error(
+    throw new UserFacingError(
       "That does not look like a TypeSafe API key. Copy the complete key from console.typesafe.ai and try again.",
     );
   }

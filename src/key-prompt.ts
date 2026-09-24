@@ -1,4 +1,4 @@
-import type { ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
+import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import {
   Container,
   CURSOR_MARKER,
@@ -9,6 +9,7 @@ import {
   Text,
   truncateToWidth,
 } from "@earendil-works/pi-tui";
+import { UserFacingError } from "./errors.js";
 
 class SecretInput extends Input {
   override render(width: number): string[] {
@@ -67,10 +68,10 @@ class KeyPrompt extends Container implements Focusable {
 }
 
 export const promptForApiKey = async (
-  ctx: ExtensionCommandContext,
+  ctx: ExtensionContext,
 ): Promise<string | undefined> => {
   if (ctx.mode !== "tui") {
-    throw new Error(
+    throw new UserFacingError(
       "Interactive login requires Pi's TUI. Set TYPESAFE_API_KEY for headless use.",
     );
   }

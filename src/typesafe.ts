@@ -9,8 +9,9 @@ import {
   TypeSafeClient,
 } from "@typesafe-ai/sdk";
 import * as z from "zod";
+import { UserFacingError } from "./errors.js";
 
-export class TypeSafeRequestError extends Error {
+export class TypeSafeRequestError extends UserFacingError {
   override readonly name = "TypeSafeRequestError";
 
   constructor(

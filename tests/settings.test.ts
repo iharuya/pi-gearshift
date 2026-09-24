@@ -39,16 +39,21 @@ describe("settings persistence and validation", () => {
   } satisfies Record<Gear, GearConfig>;
 
   test("defaults to disabled when no settings file exists", () => {
-    expect(defaultSettings()).toEqual({ enabled: false, gearBias: 0 });
+    expect(defaultSettings()).toEqual({
+      enabled: false,
+      onboardingDone: false,
+      gearBias: 0,
+    });
     expect(settingsState()).toEqual({
       kind: "loaded",
-      settings: { enabled: false, gearBias: 0 },
+      settings: { enabled: false, onboardingDone: false, gearBias: 0 },
     });
   });
 
   test("allows partial gears when disabled", () => {
     const partial: Settings = {
       enabled: false,
+      onboardingDone: false,
       gearBias: 0,
       gears: { light: sampleGear },
     };
@@ -58,16 +63,17 @@ describe("settings persistence and validation", () => {
   });
 
   test("allows omitting gears entirely when disabled", () => {
-    writeSettings({ enabled: false, gearBias: 0 });
+    writeSettings({ enabled: false, onboardingDone: false, gearBias: 0 });
     expect(settingsState()).toEqual({
       kind: "loaded",
-      settings: { enabled: false, gearBias: 0 },
+      settings: { enabled: false, onboardingDone: false, gearBias: 0 },
     });
   });
 
   test("persists and reads settings with full gears when enabled", () => {
     const full: Settings = {
       enabled: true,
+      onboardingDone: true,
       gearBias: 0,
       gears: fullGears,
     };
@@ -79,7 +85,11 @@ describe("settings persistence and validation", () => {
     const path = settingsPath();
     writeFileSync(
       path,
-      JSON.stringify({ enabled: true, gears: { light: sampleGear } }),
+      JSON.stringify({
+        enabled: true,
+        onboardingDone: false,
+        gears: { light: sampleGear },
+      }),
       { mode: 0o600 },
     );
     expect(settingsState()).toEqual({
@@ -93,7 +103,11 @@ describe("settings persistence and validation", () => {
     const path = settingsPath();
     writeFileSync(
       path,
-      JSON.stringify({ enabled: false, unknownField: true }),
+      JSON.stringify({
+        enabled: false,
+        onboardingDone: false,
+        unknownField: true,
+      }),
       { mode: 0o600 },
     );
     expect(settingsState()).toEqual({

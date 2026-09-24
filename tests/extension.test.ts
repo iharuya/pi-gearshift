@@ -71,6 +71,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
   await rm(dataDirectory, { recursive: true, force: true });
@@ -91,7 +92,7 @@ test("supports the login, enable, and logout lifecycle without exposing the key"
   await runCommand("enable");
   expect(settingsState()).toEqual({
     kind: "loaded",
-    settings: { enabled: false, gearBias: 0 },
+    settings: { enabled: false, onboardingDone: false, gearBias: 0 },
   });
   expect(notices.at(-1)).toMatch(/Configure light, standard, and heavy/);
 
@@ -112,21 +113,66 @@ test("supports the login, enable, and logout lifecycle without exposing the key"
       thinkingLevel: "high",
     },
   } satisfies Record<Gear, GearConfig>;
-  writeSettings({ enabled: false, gearBias: 0, gears: fullGears });
+  writeSettings({
+    enabled: false,
+    onboardingDone: false,
+    gearBias: 0,
+    gears: fullGears,
+  });
 
   await runCommand("enable");
   expect(settingsState()).toEqual({
     kind: "loaded",
-    settings: { enabled: true, gearBias: 0, gears: fullGears },
+    settings: {
+      enabled: true,
+      onboardingDone: false,
+      gearBias: 0,
+      gears: fullGears,
+    },
   });
   expect(notices.join("\n")).not.toContain(apiKey);
 
   await runCommand("logout");
   expect(settingsState()).toEqual({
     kind: "loaded",
-    settings: { enabled: false, gearBias: 0, gears: fullGears },
+    settings: {
+      enabled: false,
+      onboardingDone: false,
+      gearBias: 0,
+      gears: fullGears,
+    },
   });
   expect(credentialState().kind).toBe("missing");
+});
+
+test("status identifies missing settings fields without repeating the file path", async () => {
+  writeFileSync(
+    settingsPath(),
+    JSON.stringify({ enabled: false, gearBias: 0 }),
+    { mode: 0o600 },
+  );
+  await runCommand("status");
+  const notice = notices.at(-1) ?? "";
+  expect(notice).toContain("onboardingDone:");
+  expect(notice).toContain("boolean");
+  expect(notice.split(settingsPath())).toHaveLength(2);
+  expect(notice).toContain("Edit this file");
+});
+
+test("unexpected command exceptions never expose upstream details or keys", async () => {
+  const secret = "private-key-0123456789abcdef";
+  vi.spyOn(context.ui, "custom").mockRejectedValueOnce(new Error(secret));
+  await runCommand("login");
+  expect(notices.at(-1)).toContain("Unexpected internal error");
+  expect(notices.join("\n")).not.toContain(secret);
+});
+
+test("headless login retains actionable guidance", async () => {
+  await Reflect.apply(command.handler, command, [
+    "login",
+    { ...context, mode: "print" },
+  ]);
+  expect(notices.at(-1)).toContain("TYPESAFE_API_KEY");
 });
 
 test("preserves corrupted settings file untouched when disabling", async () => {

@@ -4,82 +4,40 @@
 
 Let [Jev](https://typesafe.ai/) choose the model and thinking level for each turn in the Pi Coding Agent.
 
-pi-gearshift routes requests to three user-defined gears:
-
 - `light` — straightforward, low-risk work
 - `standard` — typical implementation and debugging
 - `heavy` — deep, ambiguous, broad, or high-risk work
 
-## Install
+## Get started
 
 ```bash
 pi install npm:pi-gearshift
+pi
 ```
 
-Set `TYPESAFE_API_KEY`, or start Pi and run:
+The setup wizard guides you through choosing models and thinking levels for each gear. It asks for a [TypeSafe API key](https://console.typesafe.ai/) for automatic routing.
 
-```text
-/gearshift login
-```
-
-## Configure
-
-Create `~/.pi/agent/pi-gearshift/settings.json`. Example:
-
-```json
-{
-  "enabled": true,
-  "gearBias": 0,
-  "gears": {
-    "light": {
-      "provider": "openai-codex",
-      "model": "gpt-5.6-luna",
-      "thinkingLevel": "low"
-    },
-    "standard": {
-      "provider": "openai-codex",
-      "model": "gpt-5.6-terra",
-      "thinkingLevel": "medium"
-    },
-    "heavy": {
-      "provider": "openai-codex",
-      "model": "gpt-5.6-sol",
-      "thinkingLevel": "high"
-    }
-  }
-}
-```
-
-You are responsible for choosing model targets that your Pi setup can access. `gearBias` ranges from `-1` to `1`: negative values favor lighter gears, positive values favor heavier gears, and `0` is neutral.
-
-Enable automatic routing:
-
-```text
-/gearshift enable
-```
-
-Set `PI_GEARSHIFT_DATA_DIR` to use a different data directory.
+You can configure by `/gearshift settings` or editing `~/.pi/agent/pi-gearshift/settings.json` manually.
 
 ## Commands
 
-```text
-/gearshift status
-/gearshift use light|standard|heavy
-/gearshift enable
-/gearshift disable
-/gearshift login
-/gearshift logout
-```
+| Command | Purpose |
+| --- | --- |
+| `/gearshift status` | Show current configuration and authentication status |
+| `/gearshift settings` | Configure gears and routing bias |
+| `/gearshift use light\|standard\|heavy` | Switch gears manually, even when automatic routing is disabled |
+| `/gearshift enable` | Enable automatic routing |
+| `/gearshift disable` | Disable automatic routing |
+| `/gearshift login` | Save a TypeSafe API key |
+| `/gearshift logout` | Remove the saved key and disable automatic routing |
 
-Manual switching works even while automatic routing is disabled.
+You can also supply your key through `TYPESAFE_API_KEY`. Set `PI_GEARSHIFT_DATA_DIR` to change the data directory.
 
 ## How it works
 
-For each request, Jev scores the capability needed for the next coding-agent turn. pi-gearshift applies the configured bias, selects a gear, and switches the model and thinking level before Pi starts working.
+Before each turn, Jev evaluates the request and Gearshift selects a model and thinking level. If routing fails, Pi continues with its current setting without retrying.
 
-The routing state contains the complete current request and up to 10 recent user or assistant messages. Recent messages are middle-truncated to 256 characters each; thinking blocks, tool calls, and tool results are excluded.
-
-Routing failures are not retried. Pi keeps the current model whenever routing or model application fails.
+Routing sends your complete request and a limited number of recent user or assistant messages to TypeSafe. Recent messages are shortened to a limited length; thinking blocks, tool calls, and tool results are excluded.
 
 ## License
 
