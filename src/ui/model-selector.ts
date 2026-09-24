@@ -64,21 +64,16 @@ class ModelSelector implements Component, Focusable {
 
   render(width: number): string[] {
     const availableWidth = Math.max(0, width);
-    const constrain = (line: string): string =>
-      truncateToWidth(line, availableWidth, "");
-
     return [
-      constrain(this.theme.fg("accent", this.theme.bold(this.title))),
-      constrain(this.theme.fg("muted", this.description)),
+      this.theme.fg("accent", this.theme.bold(this.title)),
+      this.theme.fg("muted", this.description),
       "",
       ...this.input.render(availableWidth),
       "",
       ...this.list.render(availableWidth),
       "",
-      constrain(
-        this.theme.fg("dim", "↑/↓ navigate  •  Enter select  •  Esc cancel"),
-      ),
-    ];
+      this.theme.fg("dim", "↑/↓ navigate  •  Enter select  •  Esc cancel"),
+    ].map((line) => truncateToWidth(line, availableWidth, ""));
   }
 
   invalidate(): void {

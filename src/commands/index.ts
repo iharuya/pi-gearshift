@@ -1,5 +1,7 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { safeErrorMessage } from "../errors.js";
 import { GEARS } from "../settings.js";
+import { notify } from "../ui/notify.js";
 import { disable } from "./disable.js";
 import { enable } from "./enable.js";
 import { login } from "./login.js";
@@ -64,7 +66,7 @@ export const registerGearshiftCommand = (pi: ExtensionAPI): void => {
       const { action, argument } = command;
       const report = (message: string, level: ReportLevel = "info") => {
         if (ctx.hasUI) {
-          ctx.ui.notify(message, level);
+          notify(ctx, message, level);
           return;
         }
         pi.sendMessage({
@@ -85,12 +87,7 @@ export const registerGearshiftCommand = (pi: ExtensionAPI): void => {
       try {
         await handlers[action](argument, { pi, ctx, report });
       } catch (error) {
-        report(
-          error instanceof Error
-            ? error.message
-            : "pi-gearshift could not complete the command.",
-          "error",
-        );
+        report(safeErrorMessage(error), "error");
       }
     },
   });

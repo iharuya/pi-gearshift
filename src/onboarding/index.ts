@@ -2,7 +2,7 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
-import { authenticate } from "../authenticate.js";
+import { authenticate, RetryableAuthenticationError } from "../authenticate.js";
 import { credentialState } from "../credentials.js";
 import { safeErrorMessage, UserFacingError } from "../errors.js";
 import {
@@ -14,6 +14,7 @@ import {
   writeSettings,
 } from "../settings.js";
 import { editGear } from "../ui/gear-editor.js";
+import { notify } from "../ui/notify.js";
 import { onboardingTemplates } from "./templates.js";
 
 const onboardingGearOrder = [
@@ -48,7 +49,7 @@ const authenticateWithRetry = async (
     try {
       return Boolean(await authenticate(ctx));
     } catch (error) {
-      if (!(error instanceof UserFacingError)) throw error;
+      if (!(error instanceof RetryableAuthenticationError)) throw error;
       const choice = await ctx.ui.select(
         `TypeSafe authentication: ${error.message}`,
         ["Try again", "Cancel setup"],
@@ -125,15 +126,20 @@ export const runOnboarding = async (ctx: ExtensionContext): Promise<void> => {
   });
   if (!authenticated) return;
 
-  await during("saving settings", () =>
+  try {
     writeSettings({
       ...state.settings,
       gears,
       enabled: true,
       onboardingDone: true,
-    }),
-  );
-  ctx.ui.notify(
+    });
+  } catch (error) {
+    throw new UserFacingError(
+      `Gearshift setup — saving settings:\n${safeErrorMessage(error)}\nGear settings were not saved. Any saved TypeSafe key has been retained.`,
+    );
+  }
+  notify(
+    ctx,
     "Gearshift setup complete. Automatic routing is enabled. Use /gearshift settings to adjust your gears.",
     "info",
   );
@@ -145,7 +151,8 @@ export const registerOnboarding = (pi: ExtensionAPI): void => {
     try {
       await runOnboarding(ctx);
     } catch (error) {
-      ctx.ui.notify(
+      notify(
+        ctx,
         `${safeErrorMessage(error)}\nPi will continue with its current settings. Restart Pi to retry setup.`,
         "warning",
       );

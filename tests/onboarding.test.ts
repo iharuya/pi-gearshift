@@ -7,9 +7,11 @@ import type {
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { authenticate } from "../src/authenticate.js";
+import {
+  authenticate,
+  RetryableAuthenticationError,
+} from "../src/authenticate.js";
 import { credentialsPath, storeApiKey } from "../src/credentials.js";
-import { UserFacingError } from "../src/errors.js";
 import { registerOnboarding, runOnboarding } from "../src/onboarding/index.js";
 import { onboardingTemplates } from "../src/onboarding/templates.js";
 import {
@@ -18,10 +20,12 @@ import {
   settingsState,
   writeSettings,
 } from "../src/settings.js";
-import { TypeSafeRequestError } from "../src/typesafe.js";
 import { editGear } from "../src/ui/gear-editor.js";
 
-vi.mock("../src/authenticate.js", () => ({ authenticate: vi.fn() }));
+vi.mock("../src/authenticate.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../src/authenticate.js")>()),
+  authenticate: vi.fn(),
+}));
 vi.mock("../src/ui/gear-editor.js", () => ({ editGear: vi.fn() }));
 
 let directory: string;
@@ -192,8 +196,10 @@ test("unusable settings are never overwritten", async () => {
 });
 
 test.each([
-  new UserFacingError("That does not look like a TypeSafe API key."),
-  new TypeSafeRequestError("TypeSafe rejected the API key.", 401),
+  new RetryableAuthenticationError(
+    "That does not look like a TypeSafe API key.",
+  ),
+  new RetryableAuthenticationError("TypeSafe rejected the API key."),
 ])(
   "authentication errors allow explicit retry without repeating gears: $message",
   async (error) => {
@@ -221,7 +227,7 @@ test.each(["Cancel setup", undefined])(
       .mockResolvedValueOnce("I am a Claude user")
       .mockResolvedValueOnce(choice);
     vi.mocked(authenticate).mockRejectedValueOnce(
-      new TypeSafeRequestError("TypeSafe rejected the API key.", 401),
+      new RetryableAuthenticationError("TypeSafe rejected the API key."),
     );
     await runOnboarding(context);
     expect(authenticate).toHaveBeenCalledTimes(1);

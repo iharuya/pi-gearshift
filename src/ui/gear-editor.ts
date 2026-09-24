@@ -35,7 +35,7 @@ const selectThinkingLevel = async (
   if (!model.reasoning) return "off";
 
   const supported = getSupportedThinkingLevels(model).filter(isThinkingLevel);
-  if (supported.length <= 1) return "off";
+  if (supported.length <= 1) return supported[0];
 
   const fallback = fallbackThinkingLevel(supported, current);
   const options = [

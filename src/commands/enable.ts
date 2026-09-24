@@ -1,5 +1,5 @@
 import { credentialState } from "../credentials.js";
-import { hasAllGears, settingsPath, writeSettings } from "../settings.js";
+import { hasAllGears, writeSettings } from "../settings.js";
 import { verifyApiKey } from "../typesafe.js";
 import { requireSettingsLoaded } from "./require-settings.js";
 import type { CommandHandler } from "./types.js";
@@ -26,7 +26,7 @@ export const enable: CommandHandler = async (_argument, { report }) => {
 
   if (!hasAllGears(settings.gears)) {
     report(
-      `Configure light, standard, and heavy in ${settingsPath()} before enabling pi-gearshift.`,
+      "Configure light, standard, and heavy with /gearshift settings before enabling pi-gearshift.",
       "warning",
     );
     return;

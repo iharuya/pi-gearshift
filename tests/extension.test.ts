@@ -71,6 +71,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
   await rm(dataDirectory, { recursive: true, force: true });
@@ -156,6 +157,22 @@ test("status identifies missing settings fields without repeating the file path"
   expect(notice).toContain("boolean");
   expect(notice.split(settingsPath())).toHaveLength(2);
   expect(notice).toContain("Edit this file");
+});
+
+test("unexpected command exceptions never expose upstream details or keys", async () => {
+  const secret = "private-key-0123456789abcdef";
+  vi.spyOn(context.ui, "custom").mockRejectedValueOnce(new Error(secret));
+  await runCommand("login");
+  expect(notices.at(-1)).toContain("Unexpected internal error");
+  expect(notices.join("\n")).not.toContain(secret);
+});
+
+test("headless login retains actionable guidance", async () => {
+  await Reflect.apply(command.handler, command, [
+    "login",
+    { ...context, mode: "print" },
+  ]);
+  expect(notices.at(-1)).toContain("TYPESAFE_API_KEY");
 });
 
 test("preserves corrupted settings file untouched when disabling", async () => {

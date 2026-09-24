@@ -2,6 +2,7 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
+import { safeErrorMessage } from "./errors.js";
 import type { Gear, GearConfig, ThinkingLevel } from "./settings.js";
 
 export type GearApplication =
@@ -28,20 +29,27 @@ export const applyGear = async (
     };
   }
 
-  const alreadySelected =
-    ctx.model?.provider === model.provider && ctx.model.id === model.id;
-  if (!alreadySelected && !(await pi.setModel(model))) {
+  try {
+    const alreadySelected =
+      ctx.model?.provider === model.provider && ctx.model.id === model.id;
+    if (!alreadySelected && !(await pi.setModel(model))) {
+      return {
+        ok: false,
+        message: `Pi has no configured authentication for ${reference}; keeping the current model.`,
+      };
+    }
+
+    pi.setThinkingLevel(target.thinkingLevel);
+    return {
+      ok: true,
+      gear,
+      target: reference,
+      thinkingLevel: pi.getThinkingLevel(),
+    };
+  } catch (error) {
     return {
       ok: false,
-      message: `Pi has no configured authentication for ${reference}; keeping the current model.`,
+      message: `Could not fully apply ${gear} (${reference}). ${safeErrorMessage(error)} The model or thinking level may have changed; Pi will continue with its current setting.`,
     };
   }
-
-  pi.setThinkingLevel(target.thinkingLevel);
-  return {
-    ok: true,
-    gear,
-    target: reference,
-    thinkingLevel: pi.getThinkingLevel(),
-  };
 };
