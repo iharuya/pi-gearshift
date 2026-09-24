@@ -16,12 +16,12 @@ export const onboardingTemplates = {
       },
       standard: {
         provider: "anthropic",
-        model: "claude-opus-5",
+        model: "claude-sonnet-5",
         thinkingLevel: "medium",
       },
       heavy: {
         provider: "anthropic",
-        model: "claude-fable-5",
+        model: "claude-opus-5-5",
         thinkingLevel: "high",
       },
     },
@@ -31,12 +31,12 @@ export const onboardingTemplates = {
     gears: {
       light: {
         provider: "openai-codex",
-        model: "gpt-5.6-luna",
-        thinkingLevel: "low",
+        model: "gpt-6-luna",
+        thinkingLevel: "medium",
       },
       standard: {
         provider: "openai-codex",
-        model: "gpt-5.6-sol",
+        model: "gpt-6-sol",
         thinkingLevel: "medium",
       },
       heavy: {

@@ -73,9 +73,8 @@ export const runOnboarding = async (ctx: ExtensionContext): Promise<void> => {
   const started = await during("welcome", () =>
     ctx.ui.confirm(
       "Welcome to Gearshift",
-      "This setup wizard will configure three gears: Standard, Heavy, and Light. " +
+      "This setup wizard will configure 3 gears: Standard, Heavy, and Light. " +
         "Choose a model and thinking level for each, then connect Jev with a TypeSafe API key. " +
-        "Automatic routing sends your request and recent conversation excerpts to TypeSafe. " +
         "Esc cancels setup without saving gear settings. Start setup?",
     ),
   );
