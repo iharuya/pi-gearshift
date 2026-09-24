@@ -1,5 +1,10 @@
 import { type CredentialState, credentialState } from "../credentials.js";
-import { GEARS, settingsPath, settingsState } from "../settings.js";
+import {
+  formatGearBias,
+  GEARS,
+  settingsPath,
+  settingsState,
+} from "../settings.js";
 import type { CommandHandler } from "./types.js";
 
 const describeCredential = (credential: CredentialState): string => {
@@ -52,7 +57,7 @@ export const status: CommandHandler = async (
     [
       `pi-gearshift is ${settings.enabled ? "enabled" : "disabled"}.`,
       `Current: ${current}`,
-      `Gear bias: ${gearBias > 0 ? "+" : ""}${gearBias.toFixed(2)}`,
+      `Gear bias: ${formatGearBias(gearBias)}`,
       ...gears,
       auth,
       `Settings: ${settingsPath()}`,

@@ -4,6 +4,11 @@ import * as z from "zod";
 import { dataDirectory, readJson, writePrivateJson } from "./storage.js";
 
 export const GEARS = ["light", "standard", "heavy"] as const;
+export const GEAR_BIAS_MIN = -1;
+export const GEAR_BIAS_MAX = 1;
+
+export const formatGearBias = (value: number): string =>
+  value > 0 ? `+${value.toFixed(2)}` : value.toFixed(2);
 
 export type ThinkingLevel = Parameters<ExtensionAPI["setThinkingLevel"]>[0];
 const defineThinkingLevels = <const Levels extends readonly ThinkingLevel[]>(
@@ -37,7 +42,11 @@ const fullGearsSchema = z.strictObject({
   heavy: gearConfigSchema,
 });
 
-const gearBiasSchema = z.number().min(-1).max(1).default(0);
+const gearBiasSchema = z
+  .number()
+  .min(GEAR_BIAS_MIN)
+  .max(GEAR_BIAS_MAX)
+  .default(0);
 
 const settingsSchema = z.discriminatedUnion("enabled", [
   z.strictObject({

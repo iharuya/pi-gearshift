@@ -1,6 +1,6 @@
 {
   "name": "pi-gearshift",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Automatic per-turn model and thinking-level routing for Pi, powered by Jev",
   "keywords": [
     "pi-package",

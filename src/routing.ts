@@ -5,7 +5,7 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 import { applyGear } from "./apply-gear.js";
 import { credentialState } from "./credentials.js";
-import { type Gear, settingsState } from "./settings.js";
+import { formatGearBias, type Gear, settingsState } from "./settings.js";
 import { truncateMiddle } from "./truncate.js";
 import { judgeGear, type RecentMessage } from "./typesafe.js";
 
@@ -23,9 +23,6 @@ const gearForScore = (score: number): Gear => {
   if (score < 1.5) return "standard";
   return "heavy";
 };
-
-const signed = (value: number): string =>
-  value > 0 ? `+${value.toFixed(2)}` : value.toFixed(2);
 
 const toRecentMessage = (message: AgentMessage): RecentMessage | undefined => {
   if (message.role !== "user" && message.role !== "assistant") return undefined;
@@ -104,7 +101,7 @@ export const registerAutomaticRouting = (pi: ExtensionAPI): void => {
       const target = settings.gears[gear];
 
       const result = await applyGear(pi, ctx, gear, target);
-      const decision = `${gear} (score ${judgment.score.toFixed(2)} → ${adjustedScore.toFixed(2)} with bias ${signed(gearBias)}, confidence ${confidencePercent(judgment.confidence)})`;
+      const decision = `${gear} (score ${judgment.score.toFixed(2)} → ${adjustedScore.toFixed(2)} with bias ${formatGearBias(gearBias)}, confidence ${confidencePercent(judgment.confidence)})`;
       if (!result.ok) {
         ctx.ui.notify(
           `Gearshift: ${decision} was not applied. ${result.message}`,
