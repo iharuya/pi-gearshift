@@ -11,6 +11,7 @@ import {
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { getAgentDir } from "@earendil-works/pi-coding-agent";
+import { UserFacingError } from "./errors.js";
 
 const expandHome = (path: string): string => {
   if (path === "~") return homedir();
@@ -87,7 +88,9 @@ export const writePrivateJson = (path: string, value: unknown): void => {
     try {
       rmSync(temporary, { force: true });
     } catch {}
-    throw new Error(`Could not write ${path}.`);
+    throw new UserFacingError(
+      `Could not write ${path}. Check directory permissions and free disk space.`,
+    );
   }
 };
 

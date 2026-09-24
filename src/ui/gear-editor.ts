@@ -3,7 +3,7 @@ import {
   getSupportedThinkingLevels,
   type Model,
 } from "@earendil-works/pi-ai";
-import type { ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
+import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import {
   type Gear,
   type GearConfig,
@@ -28,7 +28,7 @@ const fallbackThinkingLevel = (
 };
 
 const selectThinkingLevel = async (
-  ctx: ExtensionCommandContext,
+  ctx: ExtensionContext,
   model: Model<Api>,
   current: ThinkingLevel | undefined,
 ): Promise<ThinkingLevel | undefined> => {
@@ -47,14 +47,16 @@ const selectThinkingLevel = async (
 };
 
 export const editGear = async (
-  ctx: ExtensionCommandContext,
+  ctx: ExtensionContext,
   gear: Gear,
   current: GearConfig | undefined,
+  description?: string,
 ): Promise<GearConfig | undefined> => {
   const selection = await showModelSelector(
     ctx,
     `Configure ${gearLabel(gear)}`,
     current,
+    description,
   );
   if (!selection) return undefined;
 

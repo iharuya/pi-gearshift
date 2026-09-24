@@ -51,11 +51,13 @@ const gearBiasSchema = z
 const settingsSchema = z.discriminatedUnion("enabled", [
   z.strictObject({
     enabled: z.literal(false),
+    onboardingDone: z.boolean(),
     gearBias: gearBiasSchema,
     gears: partialGearsSchema.optional(),
   }),
   z.strictObject({
     enabled: z.literal(true),
+    onboardingDone: z.boolean(),
     gearBias: gearBiasSchema,
     gears: fullGearsSchema,
   }),
@@ -75,6 +77,7 @@ export const hasAllGears = (
 
 export const defaultSettings = (): Settings => ({
   enabled: false,
+  onboardingDone: false,
   gearBias: 0,
 });
 
@@ -84,7 +87,10 @@ export const settingsPath = (): string =>
 const parseSettings = (value: unknown, path: string): Settings => {
   const result = settingsSchema.safeParse(value);
   if (!result.success) {
-    throw new Error(`Invalid settings file at ${path}.`);
+    const issues = result.error.issues.map(
+      (issue) => `${issue.path.join(".") || "settings"}: ${issue.message}`,
+    );
+    throw new Error(`Invalid settings file at ${path}:\n${issues.join("\n")}`);
   }
 
   return result.data;
@@ -110,6 +116,11 @@ export const settingsState = (): SettingsState => {
     };
   }
 };
+
+export const describeSettingsError = (
+  state: Extract<SettingsState, { kind: "unusable" }>,
+): string =>
+  `${state.reason}\nEdit this file to fix the issue, or remove it to start setup again.`;
 
 export const writeSettings = (settings: Settings): string => {
   const path = settingsPath();

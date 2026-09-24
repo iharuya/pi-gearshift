@@ -1,5 +1,6 @@
 import { type CredentialState, credentialState } from "../credentials.js";
 import {
+  describeSettingsError,
   formatGearBias,
   GEARS,
   settingsPath,
@@ -33,11 +34,10 @@ export const status: CommandHandler = async (
   if (state.kind === "unusable") {
     report(
       [
-        "pi-gearshift is inactive (settings are unusable).",
+        "Gearshift inactive — settings need attention.",
         `Current: ${current}`,
         auth,
-        `Settings: unusable — ${state.reason}`,
-        `To restore, edit or remove ${state.path}.`,
+        describeSettingsError(state),
       ].join("\n"),
       "warning",
     );

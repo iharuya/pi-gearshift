@@ -1,4 +1,4 @@
-import type { ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
+import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import {
   Container,
   CURSOR_MARKER,
@@ -67,7 +67,7 @@ class KeyPrompt extends Container implements Focusable {
 }
 
 export const promptForApiKey = async (
-  ctx: ExtensionCommandContext,
+  ctx: ExtensionContext,
 ): Promise<string | undefined> => {
   if (ctx.mode !== "tui") {
     throw new Error(

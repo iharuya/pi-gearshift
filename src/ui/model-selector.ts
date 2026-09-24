@@ -1,5 +1,5 @@
 import type { Api, Model } from "@earendil-works/pi-ai";
-import type { ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
+import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import {
   type Component,
   type Focusable,
@@ -48,6 +48,7 @@ class ModelSelector implements Component, Focusable {
     private readonly keybindings: KeybindingsManager,
     private readonly requestRender: () => void,
     private readonly done: (model: Model<Api> | undefined) => void,
+    private readonly description: string,
   ) {
     this.list = this.createList(models);
   }
@@ -68,12 +69,7 @@ class ModelSelector implements Component, Focusable {
 
     return [
       constrain(this.theme.fg("accent", this.theme.bold(this.title))),
-      constrain(
-        this.theme.fg(
-          "muted",
-          "Type to filter by provider, model ID, or model name.",
-        ),
-      ),
+      constrain(this.theme.fg("muted", this.description)),
       "",
       ...this.input.render(availableWidth),
       "",
@@ -150,9 +146,10 @@ const sortedModels = (
 };
 
 export const showModelSelector = async (
-  ctx: ExtensionCommandContext,
+  ctx: ExtensionContext,
   title: string,
   current: { provider: string; model: string } | undefined,
+  description = "Type to filter by provider, model ID, or model name.",
 ): Promise<Model<Api> | undefined> => {
   const models = sortedModels(ctx.modelRegistry.getAvailable(), current);
   if (models.length === 0) {
@@ -161,6 +158,19 @@ export const showModelSelector = async (
       "warning",
     );
     return undefined;
+  }
+
+  if (
+    current &&
+    !models.some(
+      (model) =>
+        model.provider === current.provider && model.id === current.model,
+    )
+  ) {
+    ctx.ui.notify(
+      `${current.provider}/${current.model} is not available. Choose an available model instead.`,
+      "warning",
+    );
   }
 
   return ctx.ui.custom<Model<Api> | undefined>(
@@ -172,6 +182,7 @@ export const showModelSelector = async (
         keybindings,
         () => tui.requestRender(),
         done,
+        description,
       ),
   );
 };
